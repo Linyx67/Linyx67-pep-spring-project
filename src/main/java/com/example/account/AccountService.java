@@ -7,17 +7,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
 public class AccountService {
     @Autowired
-    AccountRepository accountRepository;
+    private AccountRepository accountRepository;
     
     public Optional<Account> registerAccount(String username, String password){
         if(username==null || username.isBlank() || password.length()<4){
-            return null;
+            return Optional.empty();
         } else {
             Optional<Account> optionalAccount = accountRepository.findByUsername(username);
             if(optionalAccount.isPresent()){
-                return null;
+                return Optional.empty();
             } else {
                 accountRepository.registerAccount(username, password);
                 return accountRepository.findByUsername(username);

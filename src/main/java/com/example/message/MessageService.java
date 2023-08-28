@@ -2,22 +2,37 @@ package com.example.message;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
+
+import javax.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.account.AccountRepository;
 
+
+
+
 @Service
+@Transactional
 public class MessageService {
+    /*
+     * The random was created to manually assign the primary key since the applicaiton initialises by inserting 
+     * several records into the tables and this cause primary key violations when the .save() method is called 
+     * since this method tries to assign primary keys starting at 1.
+     */
+    Random random = new Random();
+    final int MINIMUM = 10;
     @Autowired
-    MessageRepository messageRepository;
+    private MessageRepository messageRepository;
     @Autowired
-    AccountRepository accountRepository;
+    private AccountRepository accountRepository;
 
     public List<Message> getAllMessages(){
         return messageRepository.getAllMessages();
     }
+
 
     public Optional<Message> getMessageByID(int message_id){
         return messageRepository.getMessageByID(message_id);
@@ -30,14 +45,24 @@ public class MessageService {
     public Optional<Message> newMessage(int posted_by, String message_text, long time_posted_epoch){
         if(accountRepository.findById(posted_by).isPresent()){
             if(message_text==null || message_text.isBlank() || message_text.length()>254){
-                return null;
+                return Optional.empty();
             }
             else{
-                messageRepository.newMessage(posted_by, message_text, time_posted_epoch);
-                return messageRepository.getMessageByTimeAndAccount(time_posted_epoch, posted_by);
+                Message newMessage = new Message(posted_by, message_text, time_posted_epoch);
+                return Optional.of(messageRepository.save(newMessage));
+                /*
+                 * The jpa repository .save() method is the preferred way of persisting information and
+                 * obtaining the persisted record however in this case since the appliaction manually adds 
+                 * records to the database as shown in the data.sql file on initialisaiton. The .save() method 
+                 * causes a primary key violation since on the first call it attempts to add a message_id of 1 but this already exists in the 
+                 * database. Removing these insertions from the data.sql file allows the application to work as expected.
+                 */
+
+                //messageRepository.newMessage(posted_by, message_text, time_posted_epoch);
+                //return messageRepository.getMessageByTimeAndAccount(time_posted_epoch, posted_by);
             }
         } else{
-            return null;
+            return Optional.empty();
         }
         
     }
@@ -45,15 +70,18 @@ public class MessageService {
     public void deleteMessage(int message_id){
         messageRepository.deleteMessage(message_id);
     }
-
+    
     public Optional<Message> updateMessage (int message_id, String message_text){
         Optional<Message> updatedMessage = messageRepository.getMessageByID(message_id);
         if (updatedMessage.isPresent()){
+            if(message_text==null || message_text.isBlank() || message_text.length()>254){
+                return Optional.empty();
+            }
             messageRepository.updateMessage(message_text, message_id);
             return messageRepository.getMessageByID(message_id);
         }
         else{
-            return null;
+            return Optional.empty();
         }
     }
 }

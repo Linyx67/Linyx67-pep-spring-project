@@ -21,11 +21,8 @@ public interface MessageRepository extends JpaRepository<Message, Integer>{
         @Param("messageText") String message_text, 
         @Param("timePostedEpoch") long time_posted_epoch
     );
-    
-    @Query(
-        value = "SELECT * FROM message",
-        nativeQuery = true
-    )
+
+    @Query(value = "SELECT * FROM message", nativeQuery = true)
     List<Message> getAllMessages();
     
     @Query(
@@ -35,20 +32,10 @@ public interface MessageRepository extends JpaRepository<Message, Integer>{
     Optional<Message> getMessageByID(@Param("messageId")int message_id);
 
     @Query(
-        value = "SELECT * FROM messsage WHERE posted_by = :postedBy",
+        value = "SELECT * FROM message WHERE posted_by = :postedBy",
         nativeQuery = true
     )
     List<Message> getMessageByAccount(@Param("postedBy")int posted_by);
-
-   
-    @Query(
-        value = "SELECT * FROM message WHERE time_posted_epoch = :timePostedEpoch AND posted_by = :postedBy",
-        nativeQuery = true
-    )
-    Optional<Message> getMessageByTimeAndAccount(
-        @Param("timePostedEpoch") long time_posted_epoch,
-        @Param("postedBy") int posted_by
-    );
 
     @Modifying
     @Query(
