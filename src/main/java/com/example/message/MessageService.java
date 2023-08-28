@@ -2,7 +2,6 @@ package com.example.message;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
 
 import javax.transaction.Transactional;
 
@@ -17,13 +16,6 @@ import com.example.account.AccountRepository;
 @Service
 @Transactional
 public class MessageService {
-    /*
-     * The random was created to manually assign the primary key since the applicaiton initialises by inserting 
-     * several records into the tables and this cause primary key violations when the .save() method is called 
-     * since this method tries to assign primary keys starting at 1.
-     */
-    Random random = new Random();
-    final int MINIMUM = 10;
     @Autowired
     private MessageRepository messageRepository;
     @Autowired
